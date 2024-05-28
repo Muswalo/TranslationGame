@@ -184,3 +184,81 @@ body {
 .denoter {
   font-weight: bold;
 }
+
+.closeIcon{ 
+  display: none;
+}
+
+.det {
+  display: flex;
+  flex-direction: column;
+}
+
+.openIcon {
+  font-size: 24px;
+  margin-right: 5px;
+  align-self: flex-end;
+  display: none;
+}
+.openIcon:hover {
+  color: #2125298e;
+}
+
+.levelLabel {
+  font-weight: 600;
+  font-size: 20px;
+}
+
+@media (max-width: 576px) {
+  .sidebar {
+    position: fixed;
+    z-index: 10000;
+    height: 100%;
+    transition: margin 0.5s ease-in-out, width 0.5s ease-in-out;
+    margin-left: -100%;
+  }
+
+  .sidebar.open {
+    margin-left: 0;
+  }
+
+  .main-content {
+    padding: 15px;
+  }
+
+  .openIcon {
+    display: block;
+  }
+
+  .goal-btn {
+    padding: 8px 10px;
+    margin-right: 10px;
+  }
+
+  .fixed-bottom {
+    left: 0;
+    width: 100vw;
+  }
+
+  .sidebar-logo img {
+    width: 30px;
+    margin-right: 5px;
+  }
+
+  .sidebar-logo-text {
+    font-size: 16px;
+  }  
+
+  .closeIcon{ 
+    display: block;
+    color: rgba(255, 255, 255, 0.897);
+    position: absolute;
+    font-size: 30px;
+    right: 30px;
+    margin-top: -5px;
+  }
+
+  .closeIcon:hover{
+    color: royalblue;
+  }
+}

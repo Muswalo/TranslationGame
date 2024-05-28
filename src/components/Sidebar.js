@@ -1,12 +1,14 @@
-import React from "react";
+import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import "../css/App.css";
 import logo from "../assets/images/logo.png";
 import user from "../assets/images/user.jpg";
 
 const Sidebar = () => {
+    const [isSideBarOpen, setIsSideBarOpne] = useState (true);
+
     return (
-        <div className="sidebar">
+        <div className={`sidebar ${isSideBarOpen ? 'open' : ''}`}>
             <div>
                 <div className="sidebar-logo">
                     <img src={logo} alt="Logo" />
@@ -57,6 +59,9 @@ const Sidebar = () => {
                 </div>
             </div>
 
+            <div className="closeIcon" onClick={() => setIsSideBarOpne(!isSideBarOpen)}>
+                <i className="fa fa-times"></i>
+            </div>
         </div>
     );
 };
