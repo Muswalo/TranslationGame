@@ -84,18 +84,17 @@ body {
 }
 
 .goal-btn {
-  border-radius: 10px;
-  padding: 10px 20px;
   border: none;
-  background-color: #28a745;
-  color: #fff;
+  background-color: #fff;
+  color: #212529;
+  font-size: 20px;
   font-weight: bold;
   transition: background-color 0.3s;
   margin-right: 34px;
 }
 
 .goal-btn:hover {
-  background-color: #218838;
+  opacity: 0.5;
 }
 
 .fixed-bottom {
@@ -189,15 +188,9 @@ body {
   display: none;
 }
 
-.det {
-  display: flex;
-  flex-direction: column;
-}
 
 .openIcon {
   font-size: 24px;
-  margin-right: 5px;
-  align-self: flex-end;
   display: none;
 }
 .openIcon:hover {
@@ -223,7 +216,22 @@ body {
   }
 
   .main-content {
-    padding: 15px;
+    padding: 0;
+  }
+
+  .det-cont {
+    background-color: white;
+    height: 50px;
+    padding: 0 20px;
+    width: 100%;
+    position: fixed;
+    z-index: 99;
+  }
+
+  .chat-box {
+    padding: 0 20px;
+    position: relative;
+    top: 60px;
   }
 
   .openIcon {
@@ -255,7 +263,7 @@ body {
     position: absolute;
     font-size: 30px;
     right: 30px;
-    margin-top: -5px;
+    margin-top: -10px;
   }
 
   .closeIcon:hover{

@@ -1,26 +1,29 @@
 import React from "react";
+import { useSidebar } from "../contexts/SidebarContext";
 import "../css/App.css";
 
 const MainContent = () => {
+  const { openSidebar } = useSidebar();
+
   return (
     <div className="main-content">
-      <div className="det">
-        <span className="openIcon">
+      
+      <div className="det-cont">
+        <span className="openIcon" onClick={openSidebar}>
           <i className="fas fa-bars-staggered"></i>
         </span>
-        <div className="det-cont">
-          <span className="level-cont">
-            <span className="levelLabel">Level 1</span>
-            <span className="count">1/20</span>
-          </span>
-          <span className="agscore">
-            Aggregate Score <span className="score">50%</span>
-          </span>
-        </div>
+        <span className="level-cont">
+          <span className="levelLabel">Level 1</span>
+          <span className="count">1/20</span>
+        </span>
+        <span className="agscore">
+          Score <span className="score">50%</span>
+        </span>
       </div>
 
       <div className="chat-box">
         <div className="chat-messages">
+          
           <div className="message user-message">
             <span className="denoter">Translate</span>
             {"  "}
@@ -41,6 +44,7 @@ const MainContent = () => {
               Score <span className="score">50%</span>
             </div>
           </div>
+
         </div>
       </div>
     </div>
