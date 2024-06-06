@@ -24,7 +24,7 @@ const LoginForm = (props) => {
   async function login() {
     setIsLoggingIn (true);
     try {
-      const response = await signInWithEmailAndPassword(
+      await signInWithEmailAndPassword(
         auth,
         values.email,
         values.password

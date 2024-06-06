@@ -18,7 +18,7 @@ const useForm = (callback, validate, login = false) => {
       callback();
       setIsSubmitting(false);
     }
-  }, [errors, isSubmitting]);
+  }, [errors, isSubmitting, callback]);
   
   /**
    * Handle form submission.

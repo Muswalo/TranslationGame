@@ -26,7 +26,7 @@ const App = () => {
       const unSubscribe = onAuthStateChanged(auth, handleAuthStateChanged);
       return () => unSubscribe();
     }
-  }, [initializing, auth]);
+  }, [initializing]);
 
   if (initializing) {
     return <Loader />;
