@@ -54,7 +54,7 @@ try {
       console.log("Error setting persistence");
     });
 } catch (error) {
-  console.log("Error initializing Firebase");
+  console.log("Error initializing Firebase", error);
 }
 
 /**
