@@ -1,74 +1,99 @@
-import React, { useState } from "react";
-import useForm from "../utils/auth/useForm";
-import validate from "../utils/auth/LoginFormValidationRules";
-import { useNavigate } from "react-router-dom";
+const insertSentences = async () => {
+  console.log ('insert')
+  const sentences = [
+      {
+        nyanja: "Muli bwanji?",
+        english: "How are you?",
+      },
+      {
+        nyanja: "Ndili bwino, zikomo.",
+        english: "I am fine, thank you.",      },
+      {
+        nyanja: "Dzina lanu ndani?",
+        english: "What is your name?",      },
+      {
+        nyanja: "Dzina langa ndi...",
+        english: "My name is...",      },
+      {
+        nyanja: "Mukuchita chiyani?",
+        english: "What are you doing?",      },
+      {
+        nyanja: "Ndikuphika chakudya.",
+        english: "I am cooking food.",      },
+      {
+        nyanja: "Mukupita kuti?",
+        english: "Where are you going?",      },
+      {
+        nyanja: "Ndikupita kusukulu.",
+        english: "I am going to school.",      },
+      {
+        nyanja: "Chakudya chabwino!",
+        english: "Good food!",      },
+      {
+        nyanja: "Muli ndi ana angati?",
+        english: "How many children do you have?",      },
+      {
+        nyanja: "Ndili ndi ana awiri.",
+        english: "I have two children.",      },
+      {
+        nyanja: "Mukufuna chiyani?",
+        english: "What do you want?",      },
+      {
+        nyanja: "Ndikufuna madzi.",
+        english: "I want water.",      },
+      {
+        nyanja: "Chimbudzi chili kuti?",
+        english: "Where is the bathroom?",      },
+      {
+        nyanja: "Pitani kumanzere.",
+        english: "Go to the left.",      },
+      {
+        nyanja: "Ndi nthawi yanji?",
+        english: "What time is it?",      },
+      {
+        nyanja: "Ndi nthawi ya chakudya.",
+        english: "It's mealtime.",      },
+      {
+        nyanja: "Mwasangalala lero?",
+        english: "Did you have fun today?",      },
+      {
+        nyanja: "Inde, ndasangalala.",
+        english: "Yes, I had fun.",      },
+      {
+        nyanja: "Tiwonana mawa.",
+        english: "See you tomorrow.",      }
+        ];
 
-const Form = props => {
-  const { values, errors, handleChange, handleSubmit } = useForm(
-    login,
-    validate
-  );
-  const [loggedIn, setLoggedIn] = useState(false);
-  const navigate = useNavigate();
+        sentences.forEach(async (sentence, index) => {
+          const docId = (index + 1).toString();             
+          const sentenceRef = doc(collection(db, 'Level1'), docId);
+          await setDoc(sentenceRef, sentence);
+        });  
+      };
 
-  function login() {
-    console.log("loggedIn");
-    setLoggedIn(true);
-    navigate('/default');
-  }
 
-  return (
-    <div className="section is-fullheight">
-      <div className="container">
-        <div className="column is-6 is-offset-3">
-          <div className="box">
-            <h1>Login</h1>
-            <form onSubmit={handleSubmit} noValidate>
-              <div className="field">
-                <label className="label">Email Address</label>
-                <div className="control">
-                  <input
-                    autoComplete="off"
-                    className={`input ${errors.email && "is-danger"}`}
-                    type="email"
-                    name="email"
-                    onChange={handleChange}
-                    value={values.email || ""}
-                    required
-                  />
-                  {errors.email && (
-                    <p className="help is-danger">{errors.email}</p>
-                  )}
-                </div>
-              </div>
-              <div className="field">
-                <label className="label">Password</label>
-                <div className="control">
-                  <input
-                    className={`input ${errors.password && "is-danger"}`}
-                    type="password"
-                    name="password"
-                    onChange={handleChange}
-                    value={values.password || ""}
-                    required
-                  />
-                </div>
-                {errors.password && (
-                  <p className="help is-danger">{errors.password}</p>
-                )}
-              </div>
-              <button
-                type="submit"
-                className="button is-block is-info is-fullwidth"
-              >
-                Login
-              </button>
-            </form>
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-};
 
-export default Form;
+
+      const subscribeToMessages = (userId, setMessages, level) => {
+        const messagesCollection = collection(db, "messages");
+        const q = query(
+          messagesCollection,
+          where("userId", "==", userId),
+          where("level", "==", level)
+        );
+    
+        const unsubscribe = onSnapshot(
+          q,
+          (snapshot) => {
+            const messagesList = snapshot.docs.map((doc) => ({
+              ...doc.data(),
+              id: doc.id,
+            }));
+            setMessages(messagesList);
+            setIsStart(messagesList.length === 0);
+          },
+          handleSnapshotError
+        );
+    
+        return unsubscribe;
+      };

@@ -36,6 +36,9 @@ const SignUpForm = (props) => {
         email: values.email,
         firstName: values.firstName,
         lastName: values.lastName,
+        Level1: false,
+        Level2: false,
+        Level3: false
       });
     } catch (error) {
       setIsSignup(false);
