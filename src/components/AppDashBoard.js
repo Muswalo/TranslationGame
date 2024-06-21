@@ -41,10 +41,6 @@ const AppDashBoard = () => {
     console.error("Snapshot error:", error);
   };
 
-  const handleNext = () => {
-    console.log("next");
-  };
-
   const fetchAndSetMessages = async (userId, setMessages, level) => {
     const messagesCollection = collection(db, "messages");
     const q = query(
@@ -75,21 +71,26 @@ const AppDashBoard = () => {
       where("level", "==", level),
       where("type", "==", "Answer")
     );
-
+  
     const unsubscribe = onSnapshot(
       q,
       (querySnapshot) => {
         let totalScore = 0;
+        let docCount = 0;
         querySnapshot.forEach((doc) => {
           totalScore += doc.data().score;
+          docCount++;
         });
-        setAgscore(totalScore);
+        // Calculate the average score and round it to the nearest whole number
+        const averageScore = docCount > 0 ? Math.round(totalScore / docCount) : 0;
+        setAgscore(averageScore);
       },
       handleSnapshotError
     );
-
+  
     return unsubscribe;
   };
+  
 
   const documentCountListener = (collectionName) => {
     const collectionRef = collection(db, collectionName);
@@ -141,7 +142,8 @@ const AppDashBoard = () => {
               user.uid,
               currentLevel
             );
-            const unsubscribeDocumentCount = documentCountListener(currentLevel);
+            const unsubscribeDocumentCount =
+              documentCountListener(currentLevel);
             const unsubscribeQuestionsAnswered = questionsAnsweredCountListener(
               user.uid,
               currentLevel
@@ -189,12 +191,13 @@ const AppDashBoard = () => {
 
   const handleInput = async () => {
     const lastQuestionId = getLastQuestionId(messages);
-    await handleMessageSubmit("Student", inputValue, 0, lastQuestionId);
+    console.log (lastQuestionId)
+    // await handleMessageSubmit("Student", inputValue, 0, lastQuestionId);
 
-    getCorrectValue(currentLevel, lastQuestionId).then((correctValue) => {
-      const score = gradeResponse(correctValue, inputValue);
-      handleMessageSubmit("Answer", correctValue, score, lastQuestionId);
-    });
+    // getCorrectValue(currentLevel, lastQuestionId).then((correctValue) => {
+    //   const score = gradeResponse(correctValue, inputValue);
+    //   handleMessageSubmit("Answer", correctValue, score, lastQuestionId);
+    // });
   };
 
   const getLastQuestionId = (messages) => {
@@ -223,6 +226,10 @@ const AppDashBoard = () => {
   const start = async () => {
     const questionId = Math.floor(Math.random() * 20) + 1;
     const questionIdStr = questionId.toString();
+    await startRound(questionIdStr);
+  };
+
+  const startRound = async (questionIdStr) => {
     const questionRef = doc(db, currentLevel, questionIdStr);
     try {
       const questionSnap = await getDoc(questionRef);
@@ -236,6 +243,47 @@ const AppDashBoard = () => {
       }
     } catch (error) {
       console.error("Error fetching question: ", error);
+    }
+  };
+
+  const handleNext = async () => {
+    const usedIds = await checkUsedIds();
+    console.log (usedIds);
+    const id = generateId (usedIds);
+    startRound (id.toString());
+  };
+
+  const generateId = (usedIds) => {
+    if (totalT !== 0) {
+      let questionId;
+      do {
+        questionId = Math.floor(Math.random() * totalT) + 1;
+      } while (usedIds.includes(questionId.toString()));
+      return questionId;
+    }
+    // Return null if totalT is 0 to indicate no ID can be generated
+    return null; 
+  };
+  
+
+  const checkUsedIds = async () => {
+    const messagesRef = collection(db, "messages");
+    const q = query(
+      messagesRef,
+      where("userId", "==", user.uid),
+      where("level", "==", currentLevel)
+    );
+
+    try {
+      const querySnapshot = await getDocs(q);
+      const usedIds = new Set();
+      querySnapshot.forEach((doc) => {
+        usedIds.add(doc.data().questionId);
+      });
+
+      return Array.from(usedIds);
+    } catch (error) {
+      console.error("Error fetching used question IDs:", error);
     }
   };
 
