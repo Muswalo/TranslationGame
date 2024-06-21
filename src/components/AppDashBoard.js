@@ -192,12 +192,12 @@ const AppDashBoard = () => {
   const handleInput = async () => {
     const lastQuestionId = getLastQuestionId(messages);
     console.log (lastQuestionId)
-    // await handleMessageSubmit("Student", inputValue, 0, lastQuestionId);
+    await handleMessageSubmit("Student", inputValue, 0, lastQuestionId);
 
-    // getCorrectValue(currentLevel, lastQuestionId).then((correctValue) => {
-    //   const score = gradeResponse(correctValue, inputValue);
-    //   handleMessageSubmit("Answer", correctValue, score, lastQuestionId);
-    // });
+    getCorrectValue(currentLevel, lastQuestionId).then((correctValue) => {
+      const score = gradeResponse(correctValue, inputValue);
+      handleMessageSubmit("Answer", correctValue, score, lastQuestionId);
+    });
   };
 
   const getLastQuestionId = (messages) => {
