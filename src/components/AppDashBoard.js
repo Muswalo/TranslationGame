@@ -14,6 +14,7 @@ import {
   setDoc,
   orderBy,
   onSnapshot,
+  limit
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import gradeResponse from "../Grading/gradingModule";
@@ -24,7 +25,7 @@ const AppDashBoard = () => {
   const [isStart, setIsStart] = useState(true);
   const [agscore, setAgscore] = useState(0);
   const [score, setScore] = useState(0);
-  const [totalT, setTotalT] = useState(20);
+  const [totalT, setTotalT] = useState(0);
   const [currentLevel, setCurrentLevel] = useState("Level");
   const [user, setUser] = useState(null);
   const [next, setNext] = useState(false);
@@ -190,27 +191,42 @@ const AppDashBoard = () => {
   };
 
   const handleInput = async () => {
-    const lastQuestionId = getLastQuestionId(messages);
-    console.log (lastQuestionId)
+    
+    const lastQuestionId = await getLastQuestionIdFromFirestore(user.uid, currentLevel);;
     await handleMessageSubmit("Student", inputValue, 0, lastQuestionId);
-
     getCorrectValue(currentLevel, lastQuestionId).then((correctValue) => {
       const score = gradeResponse(correctValue, inputValue);
       handleMessageSubmit("Answer", correctValue, score, lastQuestionId);
     });
   };
 
-  const getLastQuestionId = (messages) => {
-    // Find the last message with type "Translate"
-    const lastTranslateMessage = messages
-      .slice()
-      .reverse()
-      .find((msg) => msg.type === "Translate");
-
-    // Return the questionId of the last "Translate" message, or null if not found
-    return lastTranslateMessage ? lastTranslateMessage.questionId : null;
+  const getLastQuestionIdFromFirestore = async (userId, level) => {
+    try {
+      const messagesCollection = collection(db, "messages");
+      const q = query(
+        messagesCollection,
+        where("userId", "==", userId),
+        where("level", "==", level),
+        orderBy("timestamp", "desc"),
+        limit(1)
+      );
+  
+      const querySnapshot = await getDocs(q);
+  
+      if (!querySnapshot.empty) {
+        const lastMessageDoc = querySnapshot.docs[0];
+        const lastMessageData = lastMessageDoc.data();
+        return lastMessageData.questionId;
+      } else {
+        console.log("No messages found for this user and level.");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching last question ID: ", error);
+      return null;
+    }
   };
-
+  
   // types Answer, Translate, Student
   const handleMessageSubmit = async (type, message, score, questionId) => {
     const newMessage = {
@@ -248,13 +264,21 @@ const AppDashBoard = () => {
 
   const handleNext = async () => {
     const usedIds = await checkUsedIds();
-    console.log (usedIds);
     const id = generateId (usedIds);
+
+    if (id === true) {
+      handleCompleteLevel ();
+      return
+    }
     startRound (id.toString());
   };
 
   const generateId = (usedIds) => {
     if (totalT !== 0) {
+      if (usedIds.length >= totalT) {
+        return true; 
+      }
+      
       let questionId;
       do {
         questionId = Math.floor(Math.random() * totalT) + 1;
@@ -262,9 +286,12 @@ const AppDashBoard = () => {
       return questionId;
     }
     // Return null if totalT is 0 to indicate no ID can be generated
-    return null; 
+    return null;
   };
-  
+
+  const handleCompleteLevel = () => {
+    console.log ('Level complete');
+  };
 
   const checkUsedIds = async () => {
     const messagesRef = collection(db, "messages");
