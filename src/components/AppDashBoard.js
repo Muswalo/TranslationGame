@@ -32,7 +32,8 @@ const AppDashBoard = () => {
   const [next, setNext] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [levelChange, setLevelChange] = useState(false);
-
+  const [levels, setLevels] = useState ([]);
+  const [userName, setUserName] = useState ('')
   const checkLastMessageType = (messages) => {
     if (messages.length === 0) {
       return false;
@@ -136,6 +137,7 @@ const AppDashBoard = () => {
   const executeSequentialTasks = async (user) => {
     try {
       setUser(user);
+      setUserName(user.displayName)
       const newLevel = await fetchCurrentLevel(user.uid);
       setCurrentLevel(newLevel);
       console.log("fetched current level");
@@ -144,6 +146,9 @@ const AppDashBoard = () => {
       await fetchAndSetMessages(currentUserId, newLevel);
       console.log("fetched and set all messages");
 
+      const levels = await fetchLevels (user.uid)
+      console.log (levels);
+      setLevels (levels)
       // Call the listeners and store the unsubscribe functions
       const unsubscribeAggregate = aggregateScoreListener(user.uid, newLevel);
       const unsubscribeDocumentCount = documentCountListener(newLevel);
@@ -187,6 +192,31 @@ const AppDashBoard = () => {
     }
   };
 
+  const fetchLevels = async (userId) => {
+    const userDocRef = doc(db, "users", userId);
+  
+    try {
+      const userDocSnap = await getDoc(userDocRef);
+  
+      if (userDocSnap.exists()) {
+        const userData = userDocSnap.data();
+        const levels = [
+          { id: 1, name: "Level 1", isLocked: !userData.Level1 },
+          { id: 2, name: "Level 2", isLocked: !userData.Level2 },
+          { id: 3, name: "Level 3", isLocked: !userData.Level3 },
+        ];
+  
+        return levels;
+      } else {
+        console.log("No such user document!");
+        return null;
+      }
+    } catch (error) {
+      console.error("Error fetching user data: ", error);
+      return null;
+    }
+  };
+
   const executeSequentialTasksOnLevelChange = async () => {
     try {
       const newLevel = await fetchCurrentLevel(user.uid);
@@ -222,7 +252,7 @@ const AppDashBoard = () => {
       }
     });
     return () => unsubscribe();
-  }, []);
+  }, [currentLevel]);
 
   useEffect(() => {
     // Call checkLastMessageType and update the next state based on the result
@@ -485,9 +515,21 @@ const AppDashBoard = () => {
     }
   };
 
+
+  const onLevelClick = (levelId) => {
+    console.log (levelId)
+  };
+  
+  const logoutUser = async () => {
+    try {
+      await auth.signOut();
+      console.log("User logged out successfully");
+    } catch (error) {
+    }
+  }
   return (
     <div className="container-fluid chat-container">
-      <Sidebar />
+      <Sidebar levels={levels} onLevelClick={onLevelClick} userName={userName} onLogout={logoutUser}/>
       <MainContent
         messages={messages}
         agscore={agscore}
