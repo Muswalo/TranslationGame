@@ -39,11 +39,11 @@ const App = () => {
           {user ? (
             <Route path="/*" element={<AppDashBoard />} />
           ) : (
-            <React.Fragment>
+            <>
               <Route path="/login" element={<LoginForm />} />
               <Route path="/signup" element={<SignUpForm />} />
               <Route path="/*" element={<LoginForm />} />
-            </React.Fragment>
+            </>
           )}
         </Routes>
       </Router>

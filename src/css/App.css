@@ -57,7 +57,7 @@ body {
 }
 
 .message {
-  margin-bottom: 15px;
+  margin-bottom: 200px;
 }
 
 .user-message {
@@ -339,5 +339,9 @@ body {
 
   .closeIcon:hover{
     color: royalblue;
+  }
+
+  .popup {
+    width: 80%;
   }
 }

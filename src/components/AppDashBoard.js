@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import Sidebar from "./Sidebar";
 import MainContent from "./MainContent";
 import InputBox from "./InputBox";
+import LevelCompletePopup from "./LevelCompletePopup";
 import { auth, db } from "../firebase";
 import {
   collection,
@@ -14,7 +15,7 @@ import {
   setDoc,
   orderBy,
   onSnapshot,
-  limit
+  limit,
 } from "firebase/firestore";
 import { onAuthStateChanged } from "firebase/auth";
 import gradeResponse from "../Grading/gradingModule";
@@ -29,6 +30,8 @@ const AppDashBoard = () => {
   const [currentLevel, setCurrentLevel] = useState("Level");
   const [user, setUser] = useState(null);
   const [next, setNext] = useState(false);
+  const [showPopup, setShowPopup] = useState(false);
+  const [levelChange, setLevelChange] = useState(false);
 
   const checkLastMessageType = (messages) => {
     if (messages.length === 0) {
@@ -42,7 +45,7 @@ const AppDashBoard = () => {
     console.error("Snapshot error:", error);
   };
 
-  const fetchAndSetMessages = async (userId, setMessages, level) => {
+  const fetchAndSetMessages = async (userId, level) => {
     const messagesCollection = collection(db, "messages");
     const q = query(
       messagesCollection,
@@ -72,7 +75,7 @@ const AppDashBoard = () => {
       where("level", "==", level),
       where("type", "==", "Answer")
     );
-  
+
     const unsubscribe = onSnapshot(
       q,
       (querySnapshot) => {
@@ -83,15 +86,15 @@ const AppDashBoard = () => {
           docCount++;
         });
         // Calculate the average score and round it to the nearest whole number
-        const averageScore = docCount > 0 ? Math.round(totalScore / docCount) : 0;
+        const averageScore =
+          docCount > 0 ? Math.round(totalScore / docCount) : 0;
         setAgscore(averageScore);
       },
       handleSnapshotError
     );
-  
+
     return unsubscribe;
   };
-  
 
   const documentCountListener = (collectionName) => {
     const collectionRef = collection(db, collectionName);
@@ -130,38 +133,96 @@ const AppDashBoard = () => {
     return unsubscribe;
   };
 
+  const executeSequentialTasks = async (user) => {
+    try {
+      setUser(user);
+      const newLevel = await fetchCurrentLevel(user.uid);
+      setCurrentLevel(newLevel);
+      console.log("fetched current level");
+
+      const currentUserId = user.uid;
+      await fetchAndSetMessages(currentUserId, newLevel);
+      console.log("fetched and set all messages");
+
+      // Call the listeners and store the unsubscribe functions
+      const unsubscribeAggregate = aggregateScoreListener(user.uid, newLevel);
+      const unsubscribeDocumentCount = documentCountListener(newLevel);
+      const unsubscribeQuestionsAnswered = questionsAnsweredCountListener(
+        user.uid,
+        newLevel
+      );
+
+      // Cleanup function
+      return () => {
+        unsubscribeAggregate();
+        unsubscribeDocumentCount();
+        unsubscribeQuestionsAnswered();
+      };
+    } catch (error) {
+      console.log("Error occurred:", error);
+      // Handle the error appropriately
+    }
+  };
+
+  const fetchAndSetMessagesOnLevelChange = async (userId, level) => {
+    const messagesCollection = collection(db, "messages");
+    const q = query(
+      messagesCollection,
+      where("userId", "==", userId),
+      where("level", "==", level),
+      orderBy("timestamp", "asc")
+    );
+
+    try {
+      const querySnapshot = await getDocs(q);
+      const messagesList = querySnapshot.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
+      console.log(messagesList);
+      setMessages(messagesList);
+      setLevelChange(false);
+    } catch (error) {
+      handleSnapshotError(error);
+    }
+  };
+
+  const executeSequentialTasksOnLevelChange = async () => {
+    try {
+      const newLevel = await fetchCurrentLevel(user.uid);
+      setCurrentLevel(newLevel);
+      console.log("fetched current level");
+
+      const currentUserId = user.uid;
+      await fetchAndSetMessagesOnLevelChange(currentUserId, newLevel);
+      console.log("fetched and set all messages");
+      // Call the listeners and store the unsubscribe functions
+      const unsubscribeAggregate = aggregateScoreListener(user.uid, newLevel);
+      const unsubscribeDocumentCount = documentCountListener(newLevel);
+      const unsubscribeQuestionsAnswered = questionsAnsweredCountListener(
+        user.uid,
+        newLevel
+      );
+
+      // Cleanup function
+      return () => {
+        unsubscribeAggregate();
+        unsubscribeDocumentCount();
+        unsubscribeQuestionsAnswered();
+      };
+    } catch (error) {
+      console.log(error);
+    }
+  };
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
-        setUser(user);
-        fetchCurrentLevel(user.uid).then((result) => {
-          setCurrentLevel(result);
-          const currentUserId = user.uid;
-          fetchAndSetMessages(currentUserId, setMessages, result).then(() => {
-            // Call the listeners and store the unsubscribe functions
-            const unsubscribeAggregate = aggregateScoreListener(
-              user.uid,
-              currentLevel
-            );
-            const unsubscribeDocumentCount =
-              documentCountListener(currentLevel);
-            const unsubscribeQuestionsAnswered = questionsAnsweredCountListener(
-              user.uid,
-              currentLevel
-            );
-
-            // Cleanup function
-            return () => {
-              unsubscribeAggregate();
-              unsubscribeDocumentCount();
-              unsubscribeQuestionsAnswered();
-            };
-          });
-        });
+        executeSequentialTasks(user);
       }
     });
     return () => unsubscribe();
-  }, [currentLevel]);
+  }, []);
 
   useEffect(() => {
     // Call checkLastMessageType and update the next state based on the result
@@ -170,6 +231,32 @@ const AppDashBoard = () => {
       setNext(isNextEnabled);
     }
   }, [messages]);
+
+  useEffect(() => {
+    console.log("InputBox rendered with isStart:", isStart);
+    if (messages.length === 0) {
+      setIsStart(true);
+    }
+  }, [messages]);
+
+  useEffect(() => {
+    const changeLevel = async () => {
+      try {
+        await setLevel(user.uid, currentLevel);
+        console.log("level is set");
+        setShowPopup(false);
+        executeSequentialTasksOnLevelChange();
+        // console.log ('184',messages)
+      } catch (error) {
+        console.error("Error occurred:", error);
+      }
+    };
+    console.log("200");
+    if (levelChange && messages.length == 0 && !isStart) {
+      console.log("202", messages);
+      changeLevel();
+    }
+  }, [levelChange, messages]);
 
   const handleInputChange = (event) => {
     setInputValue(event.target.value);
@@ -191,8 +278,10 @@ const AppDashBoard = () => {
   };
 
   const handleInput = async () => {
-    
-    const lastQuestionId = await getLastQuestionIdFromFirestore(user.uid, currentLevel);;
+    const lastQuestionId = await getLastQuestionIdFromFirestore(
+      user.uid,
+      currentLevel
+    );
     await handleMessageSubmit("Student", inputValue, 0, lastQuestionId);
     getCorrectValue(currentLevel, lastQuestionId).then((correctValue) => {
       const score = gradeResponse(correctValue, inputValue);
@@ -210,9 +299,9 @@ const AppDashBoard = () => {
         orderBy("timestamp", "desc"),
         limit(1)
       );
-  
+
       const querySnapshot = await getDocs(q);
-  
+
       if (!querySnapshot.empty) {
         const lastMessageDoc = querySnapshot.docs[0];
         const lastMessageData = lastMessageDoc.data();
@@ -226,7 +315,7 @@ const AppDashBoard = () => {
       return null;
     }
   };
-  
+
   // types Answer, Translate, Student
   const handleMessageSubmit = async (type, message, score, questionId) => {
     const newMessage = {
@@ -264,21 +353,21 @@ const AppDashBoard = () => {
 
   const handleNext = async () => {
     const usedIds = await checkUsedIds();
-    const id = generateId (usedIds);
+    const id = generateId(usedIds);
 
     if (id === true) {
-      handleCompleteLevel ();
-      return
+      handleCompleteLevel();
+      return;
     }
-    startRound (id.toString());
+    startRound(id.toString());
   };
 
   const generateId = (usedIds) => {
     if (totalT !== 0) {
       if (usedIds.length >= totalT) {
-        return true; 
+        return true;
       }
-      
+
       let questionId;
       do {
         questionId = Math.floor(Math.random() * totalT) + 1;
@@ -289,8 +378,14 @@ const AppDashBoard = () => {
     return null;
   };
 
+  // might want to add more logic
   const handleCompleteLevel = () => {
-    console.log ('Level complete');
+    setShowPopup(true);
+  };
+
+  const closePopupAndAdvanceLevel = async () => {
+    setLevelChange(true);
+    setMessages([]);
   };
 
   const checkUsedIds = async () => {
@@ -391,17 +486,15 @@ const AppDashBoard = () => {
   };
 
   return (
-    <div className="container-fluid">
-      <div className="chat-container">
-        <Sidebar />
-        <MainContent
-          messages={messages}
-          agscore={agscore}
-          score={score}
-          totalT={totalT}
-          currentLevel={currentLevel}
-        />
-      </div>
+    <div className="container-fluid chat-container">
+      <Sidebar />
+      <MainContent
+        messages={messages}
+        agscore={agscore}
+        score={score}
+        totalT={totalT}
+        currentLevel={currentLevel}
+      />
       <InputBox
         inputValue={inputValue}
         onInputChange={handleInputChange}
@@ -411,6 +504,12 @@ const AppDashBoard = () => {
         showNext={next}
         onNext={handleNext}
       />
+      <div>
+        <LevelCompletePopup
+          show={showPopup}
+          onClose={closePopupAndAdvanceLevel}
+        />
+      </div>
     </div>
   );
 };

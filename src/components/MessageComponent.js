@@ -3,6 +3,7 @@ import "../css/App.css";
 
 const MessageComponent = ({ type, message, score }) => {
   const messageClass = type === "Translate" || type === "Answer" ? "user-message" : "bot-message";
+  const roundedScore = Math.round(score); 
 
   return (
     <div className={`message ${messageClass}`}>
@@ -11,7 +12,7 @@ const MessageComponent = ({ type, message, score }) => {
       <span className="msg">{message}</span>
       {type === "Answer" && (
         <div className="level-score">
-          Score <span className="score">{score}%</span>
+          Score <span className="score">{roundedScore}%</span>
         </div>
       )}
     </div>
