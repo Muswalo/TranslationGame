@@ -2,8 +2,9 @@ import React from "react";
 import "../css/App.css";
 
 const MessageComponent = ({ type, message, score }) => {
-  const messageClass = type === "Translate" || type === "Answer" ? "user-message" : "bot-message";
-  const roundedScore = Math.round(score); 
+  const messageClass =
+    type === "Translate" || type === "Answer" ? "user-message" : "bot-message";
+  const roundedScore = Math.round(score);
 
   return (
     <div className={`message ${messageClass}`}>

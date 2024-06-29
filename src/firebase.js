@@ -34,28 +34,20 @@ try {
    * @description Initializes Firebase app with the provided configuration.
    */
   app = initializeApp(firebaseConfig);
-  console.log("Starting to initialize Firebase...");
 
   /**
    * @description Initializes Firestore database with the initialized Firebase app.
    */
   db = getFirestore(app);
-  console.log("Finished initializing Firebase...");
 
   /**
    * @description Initializes Firebase authentication and sets its persistence to browserLocalPersistence.
    */
   auth = getAuth();
   setPersistence(auth, browserLocalPersistence)
-    .then(() => {
-      console.log('Persistence set to "browserLocalPersistence"');
-    })
-    .catch((error) => {
-      console.log("Error setting persistence");
-    });
-} catch (error) {
-  console.log("Error initializing Firebase");
-}
+    .then(() => {})
+    .catch((error) => {});
+} catch (error) {}
 
 /**
  * @exports app

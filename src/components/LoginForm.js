@@ -22,16 +22,12 @@ const LoginForm = (props) => {
   const navigate = useNavigate();
 
   async function login() {
-    setIsLoggingIn (true);
+    setIsLoggingIn(true);
     try {
-      await signInWithEmailAndPassword(
-        auth,
-        values.email,
-        values.password
-      );
-      setIsLoggingIn (false)
+      await signInWithEmailAndPassword(auth, values.email, values.password);
+      setIsLoggingIn(false);
     } catch (error) {
-      setIsLoggingIn (false)
+      setIsLoggingIn(false);
       if (isFirebaseError(error)) {
         handleFirebaseError(error, setErrors);
       }
@@ -108,7 +104,8 @@ const LoginForm = (props) => {
                       className="spinner-border spinner-border-sm"
                       role="status"
                       aria-hidden="true"
-                    ></span> {"  "}
+                    ></span>{" "}
+                    {"  "}
                     Logging in...
                   </>
                 ) : (

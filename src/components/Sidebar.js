@@ -1,19 +1,21 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useSidebar } from "../contexts/SidebarContext";
+import { useAdmin } from "../contexts/AdminContext";
 import "../css/App.css";
 import logo from "../assets/images/logo.png";
 import user from "../assets/images/user.png";
 
 const Sidebar = ({ levels, onLevelClick, userName, onLogout }) => {
   const { isSideBarOpen, openSidebar, closeSidebar } = useSidebar();
+  const { isAdmin } = useAdmin();
 
   return (
     <div className={`sidebar ${isSideBarOpen ? "open" : ""}`}>
       <div>
         <div className="sidebar-logo">
           <img src={logo} alt="Logo" />
-          <div className="sidebar-logo-text">LLPS GAME</div>
+          <div className="sidebar-logo-text">SEKELANI 😊</div>
         </div>
 
         <span className="headertext">Levels</span>
@@ -42,15 +44,22 @@ const Sidebar = ({ levels, onLevelClick, userName, onLogout }) => {
 
         <ul className="nav flex-column mb-3">
           <li className="nav-item lev">
-            <Link className="nav-link lev" to="#">
+            <Link className="nav-link lev" to="grades">
               Grades <i className="fas fa-graduation-cap"></i>
             </Link>
           </li>
-          <li className="nav-item lev">
-            <Link className="nav-link lev" to="#">
+          {isAdmin && (
+            <li className="nav-item lev">
+              <Link className="nav-link lev" to="/admin">
+                Admin Dashboard <i className="fas fa-user-shield"></i>
+              </Link>
+            </li>
+          )}
+          {/* <li className="nav-item lev">
+            <Link className="nav-link lev" to="settings">
               Settings <i className="fas fa-cog"></i>
             </Link>
-          </li>
+          </li> */}
         </ul>
       </div>
       <div className="bottom-cont">

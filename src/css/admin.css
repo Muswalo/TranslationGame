@@ -1,0 +1,40 @@
+.userCard {
+    margin: 0 10px;
+    border-bottom: 1px solid gray;
+}
+
+.cont {
+    padding: 20px;
+    display: flex;
+    justify-content: space-between;
+    /* align-items: center; */
+}
+
+.userImage {
+    height: 50px;
+    width: 50px;
+}
+
+#PlaceholderImage {
+    height: 100%;
+    width: 100%;
+}
+
+#deleteButton {
+    border: none;
+}
+
+.details {
+    display: flex;
+    flex-direction: column;
+}
+
+.levels {
+    display: flex;
+    justify-content: space-evenly;
+}
+
+#deleteButton {
+    font-size: 20px;
+}
+

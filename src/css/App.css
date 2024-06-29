@@ -185,7 +185,7 @@ body {
   font-weight: bold;
 }
 
-.closeIcon{ 
+.closeIcon {
   display: none;
 }
 
@@ -194,6 +194,7 @@ body {
   font-size: 24px;
   display: none;
 }
+
 .openIcon:hover {
   color: #2125298e;
 }
@@ -214,7 +215,7 @@ body {
 
 .welcome-text {
   font-weight: bold;
-  font-size: 24px; 
+  font-size: 24px;
   padding: 20px;
 }
 
@@ -326,9 +327,9 @@ body {
 
   .sidebar-logo-text {
     font-size: 16px;
-  }  
+  }
 
-  .closeIcon{ 
+  .closeIcon {
     display: block;
     color: rgba(255, 255, 255, 0.897);
     position: absolute;
@@ -337,7 +338,7 @@ body {
     margin-top: -10px;
   }
 
-  .closeIcon:hover{
+  .closeIcon:hover {
     color: royalblue;
   }
 

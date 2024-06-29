@@ -45,9 +45,11 @@ h1 {
 .box {
   box-shadow: none !important;
 }
+
 .sigupBtn {
   margin: 10px 0;
 }
+
 .sigup {
   text-decoration: underline;
 }
@@ -70,7 +72,7 @@ h1 {
   margin-left: 10px;
 }
 
-@media (max-width: 576px) { 
+@media (max-width: 576px) {
   .box {
     width: 100%;
     margin-left: auto;

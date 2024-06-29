@@ -18,8 +18,11 @@ const MainContent = ({ messages, currentLevel, score, totalT, agscore }) => {
   );
 
   const MessageComponent = ({ type, message, score }) => {
-    const messageClass = type === "Translate" || type === "Answer" ? "user-message" : "bot-message";
-    const roundedScore = Math.round(score); 
+    const messageClass =
+      type === "Translate" || type === "Answer"
+        ? "user-message"
+        : "bot-message";
+    const roundedScore = Math.round(score);
 
     return (
       <div className={`message ${messageClass}`}>
@@ -51,14 +54,16 @@ const MainContent = ({ messages, currentLevel, score, totalT, agscore }) => {
       </div>
 
       <div className="chat-box">
-        {messages.length === 0 ? noMessagesContent : messages.map((msg, index) => (
-          <MessageComponent
-            key={index}
-            type={msg.type}
-            message={msg.message}
-            score={msg.score}
-          />
-        ))}
+        {messages.length === 0
+          ? noMessagesContent
+          : messages.map((msg, index) => (
+              <MessageComponent
+                key={index}
+                type={msg.type}
+                message={msg.message}
+                score={msg.score}
+              />
+            ))}
       </div>
     </div>
   );

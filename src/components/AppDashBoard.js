@@ -32,8 +32,8 @@ const AppDashBoard = () => {
   const [next, setNext] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [levelChange, setLevelChange] = useState(false);
-  const [levels, setLevels] = useState ([]);
-  const [userName, setUserName] = useState ('')
+  const [levels, setLevels] = useState([]);
+  const [userName, setUserName] = useState("");
   const checkLastMessageType = (messages) => {
     if (messages.length === 0) {
       return false;
@@ -137,18 +137,15 @@ const AppDashBoard = () => {
   const executeSequentialTasks = async (user) => {
     try {
       setUser(user);
-      setUserName(user.displayName)
+      setUserName(user.displayName);
       const newLevel = await fetchCurrentLevel(user.uid);
       setCurrentLevel(newLevel);
-      console.log("fetched current level");
 
       const currentUserId = user.uid;
       await fetchAndSetMessages(currentUserId, newLevel);
-      console.log("fetched and set all messages");
 
-      const levels = await fetchLevels (user.uid)
-      console.log (levels);
-      setLevels (levels)
+      const levels = await fetchLevels(user.uid);
+      setLevels(levels);
       // Call the listeners and store the unsubscribe functions
       const unsubscribeAggregate = aggregateScoreListener(user.uid, newLevel);
       const unsubscribeDocumentCount = documentCountListener(newLevel);
@@ -164,7 +161,6 @@ const AppDashBoard = () => {
         unsubscribeQuestionsAnswered();
       };
     } catch (error) {
-      console.log("Error occurred:", error);
       // Handle the error appropriately
     }
   };
@@ -184,7 +180,6 @@ const AppDashBoard = () => {
         ...doc.data(),
         id: doc.id,
       }));
-      console.log(messagesList);
       setMessages(messagesList);
       setLevelChange(false);
     } catch (error) {
@@ -194,10 +189,10 @@ const AppDashBoard = () => {
 
   const fetchLevels = async (userId) => {
     const userDocRef = doc(db, "users", userId);
-  
+
     try {
       const userDocSnap = await getDoc(userDocRef);
-  
+
       if (userDocSnap.exists()) {
         const userData = userDocSnap.data();
         const levels = [
@@ -205,10 +200,9 @@ const AppDashBoard = () => {
           { id: 2, name: "Level 2", isLocked: !userData.Level2 },
           { id: 3, name: "Level 3", isLocked: !userData.Level3 },
         ];
-  
+
         return levels;
       } else {
-        console.log("No such user document!");
         return null;
       }
     } catch (error) {
@@ -221,11 +215,9 @@ const AppDashBoard = () => {
     try {
       const newLevel = await fetchCurrentLevel(user.uid);
       setCurrentLevel(newLevel);
-      console.log("fetched current level");
 
       const currentUserId = user.uid;
       await fetchAndSetMessagesOnLevelChange(currentUserId, newLevel);
-      console.log("fetched and set all messages");
       // Call the listeners and store the unsubscribe functions
       const unsubscribeAggregate = aggregateScoreListener(user.uid, newLevel);
       const unsubscribeDocumentCount = documentCountListener(newLevel);
@@ -240,9 +232,7 @@ const AppDashBoard = () => {
         unsubscribeDocumentCount();
         unsubscribeQuestionsAnswered();
       };
-    } catch (error) {
-      console.log(error);
-    }
+    } catch (error) {}
   };
 
   useEffect(() => {
@@ -263,7 +253,6 @@ const AppDashBoard = () => {
   }, [messages]);
 
   useEffect(() => {
-    console.log("InputBox rendered with isStart:", isStart);
     if (messages.length === 0) {
       setIsStart(true);
     }
@@ -273,17 +262,13 @@ const AppDashBoard = () => {
     const changeLevel = async () => {
       try {
         await setLevel(user.uid, currentLevel);
-        console.log("level is set");
         setShowPopup(false);
         executeSequentialTasksOnLevelChange();
-        // console.log ('184',messages)
       } catch (error) {
         console.error("Error occurred:", error);
       }
     };
-    console.log("200");
     if (levelChange && messages.length == 0 && !isStart) {
-      console.log("202", messages);
       changeLevel();
     }
   }, [levelChange, messages]);
@@ -314,8 +299,9 @@ const AppDashBoard = () => {
     );
     await handleMessageSubmit("Student", inputValue, 0, lastQuestionId);
     getCorrectValue(currentLevel, lastQuestionId).then((correctValue) => {
-      const score = gradeResponse(correctValue, inputValue);
-      handleMessageSubmit("Answer", correctValue, score, lastQuestionId);
+      gradeResponse(correctValue, inputValue).then((score) => {
+        handleMessageSubmit("Answer", correctValue, score, lastQuestionId);
+      });
     });
   };
 
@@ -337,11 +323,9 @@ const AppDashBoard = () => {
         const lastMessageData = lastMessageDoc.data();
         return lastMessageData.questionId;
       } else {
-        console.log("No messages found for this user and level.");
         return null;
       }
     } catch (error) {
-      console.error("Error fetching last question ID: ", error);
       return null;
     }
   };
@@ -370,14 +354,11 @@ const AppDashBoard = () => {
       const questionSnap = await getDoc(questionRef);
       if (questionSnap.exists()) {
         const questionData = questionSnap.data();
-        console.log(questionData);
         handleMessageSubmit("Translate", questionData.nyanja, 0, questionIdStr);
         setIsStart(false);
-      } else {
-        console.log(`No such question in ${currentLevel}!`);
       }
     } catch (error) {
-      console.error("Error fetching question: ", error);
+      console.log("Error fetching question");
     }
   };
 
@@ -457,11 +438,9 @@ const AppDashBoard = () => {
           return "Level3";
         }
       } else {
-        console.log("No such user document!");
         return "No user data found";
       }
     } catch (error) {
-      console.log("Error fetching user data: ", error);
       return "Error fetching user data";
     }
   };
@@ -477,7 +456,7 @@ const AppDashBoard = () => {
         { merge: true }
       );
     } catch (error) {
-      console.log("Error setting level: ", error);
+      console.log("Error setting level");
     }
   };
 
@@ -504,32 +483,28 @@ const AppDashBoard = () => {
       // Create a new document with an auto-generated ID
       const docRef = doc(collection(db, "messages"));
       await setDoc(docRef, newMessage);
-      console.log(
-        "Message added with ID:",
-        docRef.id,
-        "and question ID:",
-        questionId
-      );
     } catch (error) {
       console.error("Error adding message:", error);
     }
   };
 
-
   const onLevelClick = (levelId) => {
-    console.log (levelId)
+    console.log(levelId);
   };
-  
+
   const logoutUser = async () => {
     try {
       await auth.signOut();
-      console.log("User logged out successfully");
-    } catch (error) {
-    }
-  }
+    } catch (error) {}
+  };
   return (
     <div className="container-fluid chat-container">
-      <Sidebar levels={levels} onLevelClick={onLevelClick} userName={userName} onLogout={logoutUser}/>
+      <Sidebar
+        levels={levels}
+        onLevelClick={onLevelClick}
+        userName={userName}
+        onLogout={logoutUser}
+      />
       <MainContent
         messages={messages}
         agscore={agscore}
