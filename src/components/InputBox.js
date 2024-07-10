@@ -37,7 +37,7 @@ const InputBox = ({
       <input
         type="text"
         className="form-control"
-        placeholder="Type to Translate..."
+        placeholder="Re-write the sentence in ENGLISH"
         value={inputValue}
         onChange={onInputChange}
         onKeyDown={handleKeyDown}

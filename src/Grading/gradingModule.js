@@ -1,6 +1,4 @@
 async function queryModel(data) {
-  let retries = 2;
-  while (retries > 0) {
     try {
       const response = await fetch(
         "https://api-inference.huggingface.co/models/sentence-transformers/all-mpnet-base-v2",
@@ -16,17 +14,35 @@ async function queryModel(data) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
       const result = await response.json();
+      console.log (200, '||', 'grading done with MPNET')
       return result;
     } catch (error) {
-      if (error.message.includes("503")) {
-        await new Promise((r) => setTimeout(r, 8000));
-        retries--;
-      } else {
-        throw error;
-      }
+      console.error (error)
     }
+  return gradeResponseFallback (data.inputs.source_sentence, data.correctAnswerinputs.sentences[0]);
+}
+
+function gradeResponseFallback(correctAnswer, userResponse) {
+  console.log (503, '||', 'falling back to rule based grading.')
+  const normalizedCorrect = correctAnswer.toLowerCase().trim();
+  const normalizedUser = userResponse.toLowerCase().trim();
+
+  if (normalizedCorrect === normalizedUser) {
+    return [1];
   }
-  return [0.53];
+
+  const correctTokens = normalizedCorrect.split(/\s+/);
+  const userTokens = normalizedUser.split(/\s+/);
+  let matchCount = 0;
+
+  userTokens.forEach((token) => {
+    if (correctTokens.includes(token)) {
+      matchCount++;
+    }
+  });
+
+  const score = matchCount / correctTokens.length;
+  return [Math.round(score * 100) / 100];
 }
 
 const gradeResponse = async (correctAnswer, userResponse) => {
